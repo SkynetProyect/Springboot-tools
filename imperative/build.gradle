@@ -1,0 +1,57 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '4.1.1'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.graalvm.buildtools.native' version '1.1.8'
+}
+
+group = 'amaris'
+version = '0.0.1-SNAPSHOT'
+/* desactivar durante compilacion con dockerfile
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+*/
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// base de datos en cache
+	implementation 'org.springframework.boot:spring-boot-h2console'
+	// conexion con base de datos
+	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+	// servidor nety http
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	// chains de seguridad
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	//validaciones de dtos
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	// para argon2
+	//implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
+
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
+	runtimeOnly 'com.h2database:h2'
+	testImplementation 'org.springframework.boot:spring-boot-starter-data-jdbc-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	failOnNoDiscoveredTests = false
+	useJUnitPlatform()
+}
+
+graalvmNative {
+    binaries {
+        main {
+            imageName = 'imperative'
+            buildArgs.add('--static')
+            buildArgs.add('--libc=musl')
+            buildArgs.add('-Os')
+        }
+    }
+}
